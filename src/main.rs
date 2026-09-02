@@ -1,4 +1,4 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{process, time::{SystemTime, UNIX_EPOCH}};
 
 
 fn generate_payload() -> [u8; 40] {
@@ -57,5 +57,10 @@ impl IcmpHeader {
 }
 
 fn main() {
+    let id = process::id() as u16;
+    let seq = 0;
 
+    let icmp_header = IcmpHeader::echo_request(id, seq);
+    let payload = generate_payload();
+    let packet = IcmpPacket { header:icmp_header, payload:&payload };
 }
