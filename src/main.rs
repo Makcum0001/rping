@@ -34,6 +34,28 @@ pub struct IcmpHeader {
     sequence: u16,
 }
 
+impl IcmpHeader {
+    pub fn echo_request(id: u16, seq: u16) -> Self {
+        Self {
+            message_type: 8,
+            code: 0,
+            checksum: 0,
+            identifier: id,
+            sequence: seq,
+        }
+    }
+
+    pub fn echo_reply(id: u16, seq: u16) -> Self {
+        Self {
+            message_type: 0,
+            code: 0,
+            checksum: 0,
+            identifier: id,
+            sequence: seq,
+        }
+    }
+}
+
 fn main() {
 
 }
