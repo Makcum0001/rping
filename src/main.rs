@@ -1,18 +1,14 @@
 use std::{process, time::{SystemTime, UNIX_EPOCH}, vec};
 
 
-fn generate_timestamp() -> [u8; 40] {
-    let mut payload: [u8; 40] = [0; 40];
+fn current_timestamp_ms() -> u64 {
 
     let now = SystemTime::now();
     let timestamp_ms: u64 = now
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards")
         .as_millis() as u64;
-
-    payload[..8].copy_from_slice(&timestamp_ms.to_be_bytes());
-
-    payload
+    timestamp_ms
 }
 
 pub struct IcmpPacket {
