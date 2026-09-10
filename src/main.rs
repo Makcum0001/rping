@@ -1,9 +1,9 @@
-use std::{process, time::{SystemTime, UNIX_EPOCH}};
+use std::{process, time::{SystemTime, UNIX_EPOCH}, vec};
 
 
-fn generate_payload() -> [u8; 40] {
+fn generate_timestamp() -> [u8; 40] {
     let mut payload: [u8; 40] = [0; 40];
-    
+
     let now = SystemTime::now();
     let timestamp_ms: u64 = now
         .duration_since(UNIX_EPOCH)
@@ -15,14 +15,14 @@ fn generate_payload() -> [u8; 40] {
     payload
 }
 
-pub struct IcmpPacket<'a> {
+pub struct IcmpPacket {
     pub header: IcmpHeader,
-    pub payload: &'a [u8; 40],
+    pub payload: Vec<u8>,
 }
 
-impl IcmpPacket<'static> {
-    pub fn checksum() {
-        todo!()
+impl IcmpPacket {
+    pub fn to_bytes(&self) -> &[u8]{
+       todo!() 
     }
 }
 
@@ -35,13 +35,20 @@ pub struct IcmpHeader {
 }
 
 impl IcmpHeader {
-    pub fn echo_request(id: u16, seq: u16) -> Self {
+    const ICMP_HEADER_SIZE: usize = 8;
+    const ICMP_TYPE_OFFSET: usize = 0;
+    const ICMP_CODE_OFFSET: usize = 1;
+    const ICMP_CHECKSUM_OFFSET: usize = 2;
+    const ICMP_IDENTIFIER_OFFSET: usize = 4;
+    const ICMP_SEQUENCE_OFFSET: usize = 6;
+
+    pub fn echo_request(id: u16) -> Self {
         Self {
             message_type: 8,
             code: 0,
             checksum: 0,
             identifier: id,
-            sequence: seq,
+            sequence: 0,
         }
     }
 
@@ -54,13 +61,34 @@ impl IcmpHeader {
             sequence: seq,
         }
     }
+
+    pub fn to_bytes(&self) -> [u8; Self::ICMP_HEADER_SIZE] {
+        let mut bytes = [0u8; Self::ICMP_HEADER_SIZE];
+            
+            let checksum_bytes = self.checksum.to_be_bytes();
+            let identifier_bytes = self.identifier.to_be_bytes();
+            let sequence_bytes = self.sequence.to_be_bytes();
+        
+            bytes[Self::ICMP_TYPE_OFFSET] = self.message_type;
+            bytes[Self::ICMP_CODE_OFFSET] = self.code;
+        
+            bytes[Self::ICMP_CHECKSUM_OFFSET..Self::ICMP_IDENTIFIER_OFFSET]
+                .copy_from_slice(&checksum_bytes);
+        
+            bytes[Self::ICMP_IDENTIFIER_OFFSET..Self::ICMP_SEQUENCE_OFFSET]
+                .copy_from_slice(&identifier_bytes);
+        
+            bytes[Self::ICMP_SEQUENCE_OFFSET..Self::ICMP_HEADER_SIZE]
+                .copy_from_slice(&sequence_bytes);
+        
+            bytes
+    }
 }
 
 fn main() {
     let id = process::id() as u16;
-    let seq = 0;
 
-    let icmp_header = IcmpHeader::echo_request(id, seq);
-    let payload = generate_payload();
-    let packet = IcmpPacket { header:icmp_header, payload:&payload };
+    let icmp_header = IcmpHeader::echo_request(id);
+    let packet = IcmpPacket { header:icmp_header, payload:vec![1, 2, 3, 4]};
+    let bytes = packet.to_bytes();
 }
