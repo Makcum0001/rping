@@ -17,8 +17,16 @@ pub struct IcmpPacket {
 }
 
 impl IcmpPacket {
-    pub fn to_bytes(&self) -> &[u8]{
-       todo!() 
+    pub fn to_bytes(&self) -> [u8;16]{
+        let mut bytes = [0u8; 16];
+        let header_bytes = self.header.to_bytes();
+        let timestamp = current_timestamp_ms().to_be_bytes();
+        
+
+        bytes[0..8].copy_from_slice(&header_bytes);
+        bytes[8..16].copy_from_slice(&timestamp);
+        
+        bytes 
     }
 }
 
