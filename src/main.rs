@@ -35,6 +35,15 @@ impl IcmpPacket {
 
         bytes
     }
+    pub fn update_checksum(&mut self) {
+        self.header.checksum = 0;
+
+        // 2. Получаем сырые байты пакета с нулевой чексуммой
+        let raw_bytes = self.to_bytes();
+
+        // 3. Считаем сумму и записываем в заголовок
+        self.header.checksum = compute_checksum(&raw_bytes);
+    }
 }
 
 pub struct IcmpHeader {
